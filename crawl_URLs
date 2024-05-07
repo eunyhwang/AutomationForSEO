@@ -1,0 +1,55 @@
+# You can use this when you want to crawl several URLs connected with one website. Considering the website structure, you can modify the information at the bottom. 
+
+import requests
+from bs4 import BeautifulSoup
+import csv
+
+def extract_hreflang_pairs(url, css_selectors, output_filename):
+    """
+    Extract hreflang pairs (text, href) from the given URL for each CSS selector
+    and save them to a CSV file.
+    
+    Args:
+        url (str): The URL of the website.
+        css_selectors (list): A list of CSS selectors to find the elements.
+        output_filename (str): The filename to save the output CSV file.
+    """
+    hreflang_pairs = []
+
+    # Send an HTTP GET request to the URL
+    response = requests.get(url)
+
+    if response.status_code == 404:
+        print(f"URL is not found: {url}")
+    elif response.status_code == 200:
+        # Parse the HTML content of the page
+        soup = BeautifulSoup(response.content, "html.parser")
+
+        for css_selector in css_selectors:
+            # Find all elements matching the CSS selector
+            elements = soup.select(css_selector)
+
+            # Extract and append the hreflang pairs
+            for element in elements:
+                href = element.get("href")
+                text = element.text
+                if href.startswith("https://"): # if the URL already starts with https://, it doesn't append it twice. 
+                    hreflang_pairs.append((text, href))
+                else:
+                    hreflang_pairs.append((text, f"{url}{href}"))
+
+        # Write the hreflang pairs to a CSV file
+        with open(output_filename, "w", newline="", encoding="utf-8") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["Text", "Href"])  # Write the header row
+            writer.writerows(hreflang_pairs)  # Write the pairs
+
+        print(f"Data saved to {output_filename}")
+    else:
+        print(f"HTTP request to {url} failed with status code {response.status_code}")
+
+### You need modify this part
+url = "url-of-the-website"
+css_selectors = ["selector1", "selector2"] # you can add more
+output_filename = "output.csv"
+extract_hreflang_pairs(url, css_selectors, output_filename) #run-the-code
