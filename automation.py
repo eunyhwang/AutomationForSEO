@@ -9,6 +9,17 @@ from datetime import datetime
 
 keywords_df = pd.read_csv("data/expanded_keywords.csv")  # 확장 키워드 데이터 예시
 
+def select_top_keywords(
+    min_search_volume=100,
+    max_difficulty=50,
+    min_cpc=0.5,
+    sim_threshold=0.2,
+    min_word_count=3,       # long-tail filter
+    top_n=500,
+    bq_project="kaggle-big-query-2025",
+    input_table="seo_demo.expanded_keywords",
+    output_table="seo_demo.top_keywords"
+):
     """
     Seed keyword 기반 확장 키워드 선별 및 BigQuery 적재 함수 (Long-tail 포함)
 
